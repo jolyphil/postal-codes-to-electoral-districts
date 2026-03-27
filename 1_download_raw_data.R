@@ -32,7 +32,10 @@ yetz_br_file |>
 
 # Source:
 # Bundeswahlleiterin (2025). Bundestagswahl 2025: Karte der Wahlkreise zum Download. 
+# Shapefile (SHP). Geometrie der Wahlkreise im Koordinatensystem UTM32 
+# (nicht generalisiert).
 # https://www.bundeswahlleiterin.de/bundestagswahlen/2025/wahlkreiseinteilung/downloads.html
+
 
 bwl_url <- "https://www.bundeswahlleiterin.de/dam/jcr/b3656fdd-eb0c-4721-ba02-9e7fdf558475/btw25_geometrie_wahlkreise_vg250_shp.zip"
 bwl_zip_file <- tempfile()

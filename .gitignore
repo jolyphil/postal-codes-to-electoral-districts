@@ -1,0 +1,9 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+data-raw/bundeswahlleiterin/*
+!data-raw/bundeswahlleiterin/.keep
+data-raw/yetz/*
+!data-raw/yetz/.keep

@@ -32,17 +32,25 @@ wk  <- "data-raw/bundeswahlleiterin/btw25_geometrie_wahlkreise_vg250.shp" |>
 
 # Get intersections -------------------------------------------------------
 
+# Get area of postal codes
+plz_area_df <- plz |> 
+  mutate(area_plz = st_area(geometry)) |> 
+  st_drop_geometry()
+
 intersections <- st_intersection(plz, wk) |> 
-  mutate(area_intersection = st_area(geometry)) |> 
+  mutate(area_intersection = st_area(geometry)) |>
+  left_join(plz_area_df, by = join_by(postcode)) |> 
   arrange(postcode, desc(area_intersection)) |> 
   group_by(postcode) |> 
+  mutate(prop_overlap = as.numeric(area_intersection / area_plz),
+         prop_overlap = round(prop_overlap, digits = 3)) |> 
+  filter(prop_overlap >= 0.001) |> # Precision: 0.1%
   mutate(overlap_rank = row_number(),
-         n_intersecting_wk = n(),
-         keep = if_else(overlap_rank == 1,
-                        "Correctly assigned",
-                        "Incorrectly assigned"),
-         keep = factor(keep, levels = c("Incorrectly assigned",
-                                        "Correctly assigned")))
+         status = if_else(overlap_rank == 1,
+                          "Correctly assigned",
+                          "Incorrectly assigned"),
+         status = factor(status, levels = c("Incorrectly assigned",
+                                            "Correctly assigned")))
 
 
 # Get comparison graphs ---------------------------------------------------
@@ -54,34 +62,41 @@ p_plz <- plz |>
   theme_minimal()
 
 p_intersections <- intersections |> 
-  ggplot(aes(fill = keep)) +
+  ggplot(aes(fill = status)) +
   geom_sf() +
-  labs(title = "Geometric intersections\nwith electoral districts") +
-  labs(fill = "") +
+  labs(title = "Geometric intersections\nwith electoral districts",
+       fill = "") +
   theme_minimal()
 
 ggsave("figures/intersections.png", plot = p_plz + p_intersections)
 
 
-# Get share of postal code covered ----------------------------------------
+# Remove geometric attributes ---------------------------------------------
 
-# Get area of postal codes
-plz_area_df <- plz |> 
-  mutate(area_plz = st_area(geometry)) |> 
-  st_drop_geometry()
-
-shared_area_df <- intersections |> 
+tab_intersections <- intersections |> 
   st_drop_geometry() |> 
-  left_join(plz_area_df, by = join_by(postcode)) |> 
-  group_by(postcode) |> 
-  mutate(area_shared_with_wk = as.numeric(area_intersection / area_plz))
+  mutate(intersection_id = paste(postcode, 
+                                 formatC(WKR_NR, 
+                                         width = 3, format = "d", flag = "0"), 
+                                 sep = "_")) |> 
+  select(intersection_id,
+         plz = postcode,
+         wkr_nr = WKR_NR,
+         wkr_name = WKR_NAME,
+         land_nr = LAND_NR,
+         land_name = LAND_NAME,
+         prop_overlap)
+
+tab_best_match <- tab_intersections |> 
+  group_by(plz) |> 
+  slice_max(prop_overlap, with_ties = FALSE) 
 
 
 # Plot distribution of shared area ----------------------------------------
 
-p_bar <- shared_area_df |> 
-  group_by(postcode) |> 
-  summarize(n_intersecting_wk = first(n_intersecting_wk)) |> 
+p_bar <-tab_intersections |> 
+  group_by(plz) |> 
+  summarize(n_intersecting_wk = n()) |> 
   group_by(n_intersecting_wk) |> 
   summarize(n = n()) |> 
   mutate(pct = (n / sum(n)) * 100,
@@ -97,8 +112,8 @@ p_bar <- shared_area_df |>
 
 ggsave("figures/n_intersecting_wk.png", plot = p_bar)
 
-p_hist <- shared_area_df |> 
-  ggplot(aes(x = area_shared_with_wk)) +
+p_hist <- tab_intersections |> 
+  ggplot(aes(x = prop_overlap)) +
   geom_histogram(boundary = 0, binwidth = 0.05) +
   labs(x = "Shared area with postal code",
        y = "Number of geometric intersections") +
@@ -110,25 +125,5 @@ ggsave("figures/hist_shared_area.png", plot = p_hist)
 
 # Export final tables -----------------------------------------------------
 
-tab_intersections <- shared_area_df |> 
-  mutate(intersection_id = paste(postcode, WKR_NR, sep = "_")) |> 
-  select(intersection_id,
-         plz = postcode,
-         wkr_nr = WKR_NR,
-         wkr_name = WKR_NAME,
-         land_nr = LAND_NR,
-         land_name = LAND_NAME,
-         prop_overlap = area_shared_with_wk)
-
 write_csv(tab_intersections, "data/tab_intersections.csv")
-
-tab_best_match <- shared_area_df |> 
-  group_by(postcode) |> 
-  slice_max(area_shared_with_wk, with_ties = FALSE) |> 
-  select(plz = postcode,
-         wkr_nr = WKR_NR,
-         wkr_name = WKR_NAME,
-         land_nr = LAND_NR,
-         land_name = LAND_NAME)
-
 write_csv(tab_best_match, "data/tab_best_match.csv")

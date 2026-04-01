@@ -6,8 +6,10 @@ Produce a reproducible conversion linking German postal codes (Postleitzahl / PL
 
 The workflow computes geometric intersections between postal code areas and electoral districts and derives:
 
-- a **full intersection table** with overlap shares  
+- a **full intersection table** with overlap shares 
 - a **best-match table** assigning each PLZ to the electoral district with the largest area overlap  
+
+**Note**: Area overlaps are rounded to **0.1%** (3 decimal places) for readability. Intersections below **0.1%** (`prop_overlap < 0.001`) are removed to reduce geometric artifacts. 
 
 ---
 

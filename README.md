@@ -98,7 +98,7 @@ A large share of postal codes map cleanly to a single district, while some span 
 
 **Note:**  
 Histogram of intersections by the share of a postal code’s area covered.
-The distribution is highly bimodal, with peaks near 0 and 1, indicating that most postal codes can be almost entirely assign to a single electoral district, with only small fragments overlapping neighboring districts.
+The distribution is highly bimodal, with peaks near 0 and 1, indicating that most postal codes can be almost entirely assigned to a single electoral district, with only small fragments overlapping neighboring districts.
 
 ---
 

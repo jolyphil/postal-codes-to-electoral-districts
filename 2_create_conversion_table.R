@@ -89,7 +89,8 @@ tab_intersections <- intersections |>
 
 tab_best_match <- tab_intersections |> 
   group_by(plz) |> 
-  slice_max(prop_overlap, with_ties = FALSE) 
+  slice_max(prop_overlap, with_ties = FALSE) |> 
+  select(-c(intersection_id))
 
 
 # Plot distribution of shared area ----------------------------------------
@@ -113,11 +114,20 @@ p_bar <-tab_intersections |>
 ggsave("figures/n_intersecting_wk.png", plot = p_bar)
 
 p_hist <- tab_intersections |> 
-  ggplot(aes(x = prop_overlap)) +
+  arrange(plz, desc(prop_overlap)) |> 
+  group_by(plz) |> 
+  mutate(status = if_else(row_number() == 1,
+                          "Matched",
+                          "Unmatched"),
+         status = factor(status, 
+                         levels = c("Unmatched", "Matched"))) |> 
+  ggplot(aes(x = prop_overlap, color = status, fill = status)) +
   geom_histogram(boundary = 0, binwidth = 0.05) +
   labs(x = "Shared area with postal code",
        y = "Number of geometric intersections") +
   scale_x_continuous(breaks = seq(0, 1, 0.1)) +
+  labs(color = "",
+       fill = "") +
   theme_minimal() 
 
 ggsave("figures/hist_shared_area.png", plot = p_hist)

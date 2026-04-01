@@ -1,26 +1,36 @@
 # postal-codes-to-electoral-districts
 
+## Problem
+
+Mapping German postal codes to electoral districts is challenging. As the Federal Returning Officer (Bundeswahlleiterin) noted in the following response, there is no perfect solution to this problem because postal code areas may not overlap perfectly with electoral districts:
+
+> Ohnehin ist jedoch eine Zuordnung von Postleitzahlen und Wahlkreisen in vielen Fällen nicht eindeutig möglich, da die Postleitzahlengebiete üblicherweise nicht entlang der Wahlkreisgrenzen verlaufen. Darüber hinaus liegt uns als kleinste systematisierte Gebietseinheit bei der Wahlkreiseinteilung die Gemeinde als Ganzes vor. Bei Gemeinden, die durch mehrere Wahlkreise "geteilt" sind, fehlt uns eine weitere Differenzierung (z.B. nach Stadtteil, Bezirk, Straße), so dass hier ebenso eine eindeutige Zuordnung der Postleitzahlen nicht möglich ist.
+
+Bundeswahlleiterin (2021, March 1st). Veröffentlichung einer vollständigen Liste von Postleitzahlen und den zugehörigen Wahlkreisen.
+Anfrage an: Bundeswahlleiterin. _FragDenStaat_. https://fragdenstaat.de/anfrage/veroffentlichung-einer-vollstandigen-liste-von-postleitzahlen-und-den-zugehorigen-wahlkreisen/#nachricht-572951 
+
 ## Goal
 
-Produce a reproducible conversion linking German postal codes (Postleitzahl / PLZ) to Bundestag electoral districts (Wahlkreise) for the 2025 federal election.
+Produce a reproducible conversion table linking German postal codes (Postleitzahl / PLZ) to Bundestag electoral districts (Wahlkreise) for the 2025 federal election.
 
 The workflow computes geometric intersections between postal code areas and electoral districts and derives:
 
-- a **full intersection table** with overlap shares 
-- a **best-match table** assigning each PLZ to the electoral district with the largest area overlap  
-
-**Note**: Area overlaps are rounded to **0.1%** (3 decimal places) for readability. Intersections below **0.1%** (`prop_overlap < 0.001`) are removed to reduce geometric artifacts. 
+- A **full intersection table** with overlap shares;
+- A **best-match table** assigning each PLZ to the electoral district with the largest area overlap.
 
 ---
 
 ## Method summary
 
-1. Load and clean geospatial data (`sf`)
-2. Harmonize geometries and compute intersections
-3. Calculate intersection areas and overlap shares
-4. Rank overlaps per postal code
-5. Select the district with the maximum overlap
-6. Export results as CSV tables
+1. Import raw data from Vollnhals (2026) and Bundeswahlleiterin (2025)
+2. Load and clean geospatial data (`sf`)
+3. Harmonize geometries and compute intersections
+4. Calculate intersection areas and overlap shares
+5. Round area overlaps to **0.1%** (3 decimal places) for readability
+6. Remove intersections below **0.1%** (`prop_overlap < 0.001`) to reduce geometric artifacts
+7. Rank overlaps per postal code
+8. Select the district with the maximum overlap
+9. Export results as CSV tables
 
 ---
 
@@ -69,6 +79,7 @@ Assigns each postal code to the electoral district with the **largest area overl
 - `wkr_name` — electoral district name  
 - `land_nr` — federal state number  
 - `land_name` — federal state name  
+- `prop_overlap` — proportion of the total area of the postcode that is covered by the selected electoral district
 
 ---
 
@@ -100,7 +111,7 @@ A large share of postal codes map cleanly to a single district, while some span 
 
 **Note:**  
 Histogram of intersections by the share of a postal code’s area covered.
-The distribution is highly bimodal, with peaks near 0 and 1, indicating that most postal codes can be almost entirely assigned to a single electoral district, with only small fragments overlapping neighboring districts.
+The distribution is highly bimodal, with peaks near 0 and 1, indicating that most postal codes can be almost entirely assigned to a single electoral district, with only small fragments overlapping neighboring districts. 
 
 ---
 

@@ -100,7 +100,7 @@ ggsave("figures/n_intersecting_wk.png", plot = p_bar)
 p_hist <- shared_area_df |> 
   ggplot(aes(x = area_shared_with_wk)) +
   geom_histogram(boundary = 0, binwidth = 0.05) +
-  labs(x = "Shared area with electoral district",
+  labs(x = "Shared area with postal code",
        y = "Number of geometric intersections") +
   scale_x_continuous(breaks = seq(0, 1, 0.1)) +
   theme_minimal() 

@@ -38,7 +38,7 @@ The workflow computes geometric intersections between postal code areas and elec
 
 ### 1. Full intersection table
 
-📄 **File:** `data/tab_intersections.csv`
+📄 **File:** [`data/tab_intersections.csv`](data/tab_intersections.csv)
 
 Contains all geometric intersections between postal codes and electoral districts, including overlap proportions.
 
@@ -56,7 +56,7 @@ Contains all geometric intersections between postal codes and electoral district
 
 ### 2. Best-match conversion table
 
-📄 **File:** `data/tab_best_match.csv`
+📄 **File:** [`data/tab_best_match.csv`](data/tab_best_match.csv)
 
 Assigns each postal code to the electoral district with the **largest area overlap**.
 
